@@ -33,9 +33,12 @@ def _inline_cdn_scripts(html: str) -> str:
     """CDN Chart.js 스크립트 태그를 인라인 코드로 교체."""
     chartjs = _fetch_chartjs()
     if chartjs:
+        # replacement을 lambda로 전달: Python 3.13에서 re.sub replacement 문자열의
+        # \s 등 JS 이스케이프가 re.error를 발생시키는 문제 방지
+        replacement = f'<script>\n{chartjs}\n</script>'
         html = re.sub(
             r'<script\b[^>]+src=["\'][^"\']*chart\.js[^"\']*["\'][^>]*>\s*</script>',
-            f'<script>\n{chartjs}\n</script>',
+            lambda _: replacement,
             html,
             flags=re.IGNORECASE,
         )
