@@ -314,14 +314,26 @@ def build_custom_report_prompt(
     active_fields = {k: v for k, v in FIELD_MAP.items()
                      if not selected_fields or k in selected_fields}
 
+    import math
+
+    def _clean(v):
+        """None / NaN / Inf → 0으로 정규화."""
+        if v is None:
+            return 0
+        try:
+            f = float(v)
+            return 0 if not math.isfinite(f) else f
+        except (TypeError, ValueError):
+            return 0
+
     def safe_avg(vals):
-        vals = [x for x in vals if x]
+        vals = [x for x in vals if x and math.isfinite(float(x))]
         return sum(vals) / len(vals) if vals else 0
 
     # 집계 통계
     agg = {}
     for label, field in active_fields.items():
-        vals = [g.get(field) or 0 for g in filtered_games]
+        vals = [_clean(g.get(field)) for g in filtered_games]
         agg[label] = {
             "total": round(sum(vals)),
             "average": round(safe_avg(vals)),
