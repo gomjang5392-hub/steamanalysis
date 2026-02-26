@@ -18,9 +18,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Chart.js 인라인 삽입 (Streamlit Cloud iframe CDN 차단 우회) ───────────
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=86400)
 def _fetch_chartjs() -> str:
-    """Chart.js 미니파이 버전을 CDN에서 가져와 캐시."""
+    """Chart.js 미니파이 버전 반환 — 번들 파일 우선, 실패 시 CDN 폴백."""
+    # 1순위: 레포 내 번들 파일 (Streamlit Cloud CDN 차단 우회)
+    bundle = os.path.join(os.path.dirname(os.path.dirname(__file__)), "analysis", "chart.min.js")
+    try:
+        with open(bundle, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        pass
+    # 2순위: CDN 폴백
     try:
         url = "https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -32,16 +40,28 @@ def _fetch_chartjs() -> str:
 def _inline_cdn_scripts(html: str) -> str:
     """CDN Chart.js 스크립트 태그를 인라인 코드로 교체."""
     chartjs = _fetch_chartjs()
-    if chartjs:
-        # replacement을 lambda로 전달: Python 3.13에서 re.sub replacement 문자열의
-        # \s 등 JS 이스케이프가 re.error를 발생시키는 문제 방지
-        replacement = f'<script>\n{chartjs}\n</script>'
-        html = re.sub(
-            r'<script\b[^>]+src=["\'][^"\']*chart\.js[^"\']*["\'][^>]*>\s*</script>',
-            lambda _: replacement,
-            html,
-            flags=re.IGNORECASE,
-        )
+    if not chartjs:
+        return html
+
+    replacement = f'<script>\n{chartjs}\n</script>'
+
+    # Claude가 생성하는 다양한 Chart.js script 태그 형식 대응
+    # - <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    # - <script src="...chart.js@4.x.x/dist/chart.umd.min.js"></script>
+    # - <script ... crossorigin="anonymous"> / defer / async 속성 포함
+    # - src에 chart.js 포함하는 모든 script 태그
+    # replacement을 lambda로 전달: Python 3.13 re.sub replacement \s 이스케이프 에러 방지
+    html, n = re.subn(
+        r'<script\b[^>]*\bsrc=["\'][^"\']*chart[^"\']*["\'][^>]*>\s*</script>',
+        lambda _: replacement,
+        html,
+        flags=re.IGNORECASE,
+    )
+
+    # regex 매칭 실패했지만 HTML에 Chart.js 사용 코드가 있으면 <head> 직후에 삽입
+    if n == 0 and ('new Chart(' in html or 'Chart.register' in html):
+        html = html.replace('<head>', f'<head>\n{replacement}', 1)
+
     return html
 
 st.set_page_config(page_title="커스텀 리포트", page_icon="📋", layout="wide")
