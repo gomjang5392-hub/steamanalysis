@@ -16,7 +16,9 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2, ensure_ascii=False\\)\\)\")",
       "WebFetch(domain:github.com)",
       "Bash(wc:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(git:*)",
+      "Bash(python3:*)"
     ]
   }
 }

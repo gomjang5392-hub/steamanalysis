@@ -355,7 +355,7 @@ with st.expander(
                     else:
                         row[field] = f"{val:,}" if val > 999 else val
                 preview_rows.append(row)
-            st.dataframe(pd.DataFrame(preview_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(preview_rows), width='stretch', hide_index=True)
             if len(filtered) > 15:
                 st.caption(f"수익 기준 상위 15개 표시 (전체 {len(filtered):,}개)")
 
@@ -390,7 +390,7 @@ with st.expander(
                             height=250, margin=dict(t=30,b=30), title="위시리스트 분포",
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                 with col2:
                     # 플레이타임 구간 비율
@@ -412,7 +412,7 @@ with st.expander(
                             title="플레이타임 구간 분포",
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                 with col3:
                     # 리뷰점수 분포
@@ -424,7 +424,7 @@ with st.expander(
                             height=250, margin=dict(t=30,b=30), title="리뷰점수 분포",
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                 # 팔로워 상위 10
                 top10 = sorted(filtered, key=lambda x: x.get("followers") or 0, reverse=True)[:10]
@@ -434,7 +434,7 @@ with st.expander(
                          "팔로워": f"{(g.get('followers') or 0):,.0f}",
                          "위시리스트": f"{(g.get('wishlists') or 0):,.0f}"}
                         for g in top10]
-                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
 
         # ── 시계열 탭 ────────────────────────────────────
         if inc_history and "📅 시계열" in ptab:
@@ -460,7 +460,7 @@ with st.expander(
                             legend=dict(orientation="h", y=1.12),
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                     with h_tabs[1]:
                         fig = go.Figure()
@@ -474,7 +474,7 @@ with st.expander(
                             legend=dict(orientation="h", y=1.12),
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                     with h_tabs[2]:
                         fig = go.Figure()
@@ -490,7 +490,7 @@ with st.expander(
                             legend=dict(orientation="h", y=1.12),
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                     with h_tabs[3]:
                         fig = go.Figure()
@@ -505,7 +505,7 @@ with st.expander(
                             legend=dict(orientation="h", y=1.12),
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
                     # 전체 수치 테이블
                     st.markdown("**전체 수치**")
@@ -524,7 +524,7 @@ with st.expander(
                     df_show["평균가격($)"]   = df_show["평균가격($)"].apply(lambda x: f"${x:.2f}")
                     df_show["평균팔로워"]    = df_show["평균팔로워"].apply(lambda x: f"{x:,.0f}")
                     df_show["평균위시리스트"]= df_show["평균위시리스트"].apply(lambda x: f"{x:,.0f}")
-                    st.dataframe(df_show, use_container_width=True, hide_index=True)
+                    st.dataframe(df_show, width='stretch', hide_index=True)
 
         # ── 국가별 탭 ────────────────────────────────────
         if inc_country and "🌍 국가별" in ptab:
@@ -544,14 +544,14 @@ with st.expander(
                         fig.update_layout(xaxis_title="비율 (%)", height=460,
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
                     with col2:
                         fig = go.Figure(go.Pie(
                             labels=names[:10], values=pcts[:10],
                             hole=0.35, textinfo="label+percent"))
                         fig.update_layout(height=460, paper_bgcolor="#0e1117",
                             font=dict(color="white"), showlegend=False)
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
 
         # ── 유저 겹침 탭 ─────────────────────────────────
         if inc_overlap and "🔗 유저 겹침" in ptab:
@@ -574,7 +574,7 @@ with st.expander(
                             "겹침 광범위성": f"{o['overlap_pct']}%",
                             "장르": ", ".join(o["genres"][:3]) if o["genres"] else "-",
                         })
-                    st.dataframe(pd.DataFrame(ol_rows), use_container_width=True, hide_index=True)
+                    st.dataframe(pd.DataFrame(ol_rows), width='stretch', hide_index=True)
 
                     # 버블 차트
                     import math as _math
@@ -617,7 +617,7 @@ with st.expander(
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"),
                         )
-                        st.plotly_chart(fig_b, use_container_width=True)
+                        st.plotly_chart(fig_b, width='stretch')
                 else:
                     st.info("겹침 데이터가 부족합니다.")
 
@@ -698,7 +698,7 @@ with st.expander("⚙️ 프롬프트 고급 설정", expanded=False):
 col_btn1, col_btn2, _ = st.columns([1, 1, 4])
 with col_btn1:
     generate_btn = st.button("🚀 리포트 생성", type="primary",
-        use_container_width=True,
+        width='stretch',
         disabled=len(filtered) == 0 or not user_prompt.strip())
 
 if not user_prompt.strip():
@@ -800,7 +800,7 @@ if "generated_html" in st.session_state:
             data=full_html.encode("utf-8"),
             file_name=f"steam_report_{gen_at}.html",
             mime="text/html",
-            use_container_width=True,
+            width='stretch',
             type="primary",
         )
     with dl2:

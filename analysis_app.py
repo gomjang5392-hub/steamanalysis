@@ -47,10 +47,10 @@ with st.sidebar:
 
     st.divider()
     st.markdown("**페이지 목록**")
-    st.page_link("pages/1_장르_KPI_트렌드.py", label="📈 장르 KPI 트렌드", icon="📈")
-    st.page_link("pages/2_시장_현황_분석.py", label="🏪 시장 현황 분석", icon="🏪")
-    st.page_link("pages/3_개발_가이드.py", label="🛠 개발 전략 가이드", icon="🛠")
-    st.page_link("pages/4_커스텀_리포트.py", label="📋 커스텀 AI 리포트", icon="📋")
+    st.page_link("pages/1_장르_KPI_트렌드.py", label="장르 KPI 트렌드", icon="📈")
+    st.page_link("pages/2_시장_현황_분석.py", label="시장 현황 분석", icon="🏪")
+    st.page_link("pages/3_개발_가이드.py", label="개발 전략 가이드", icon="🛠")
+    st.page_link("pages/4_커스텀_리포트.py", label="커스텀 AI 리포트", icon="📋")
 
 # ── 메인 ─────────────────────────────────────────────────
 st.title("🎮 Steam 게임 시장 분석 서비스")
@@ -181,7 +181,7 @@ for genre, stat in list(genre_stats.items())[:10]:
 
 st.dataframe(
     pd.DataFrame(genre_rows),
-    use_container_width=True,
+    width='stretch',
     hide_index=True,
 )
 
@@ -222,7 +222,7 @@ fig.update_layout(
     paper_bgcolor="#0e1117",
     font=dict(color="white"),
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 # ── 푸터 ─────────────────────────────────────────────────
 st.divider()

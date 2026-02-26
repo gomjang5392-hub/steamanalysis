@@ -130,7 +130,7 @@ if show_market and "📅 출시 추세" in tab_map:
         fig1.update_layout(xaxis_title="출시 월", yaxis_title="게임 수",
                            height=300, plot_bgcolor="#0e1117",
                            paper_bgcolor="#0e1117", font=dict(color="white"))
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig1, width='stretch')
 
         col1, col2 = st.columns(2)
         genre_stats = get_genre_stats(filtered)
@@ -144,7 +144,7 @@ if show_market and "📅 출시 추세" in tab_map:
                 hole=0.4, textinfo="label+percent"))
             fig2.update_layout(height=340, paper_bgcolor="#0e1117",
                                font=dict(color="white"), showlegend=False)
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width='stretch')
 
         with col2:
             st.subheader("판매량 분포 (로그 스케일)")
@@ -157,7 +157,7 @@ if show_market and "📅 출시 추세" in tab_map:
                            ticktext=["100만","300만","1천만","3천만","1억"]),
                 yaxis_title="게임 수", height=340,
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"))
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width='stretch')
 
         st.subheader("리뷰 점수 vs 수익")
         rows = [{"name":g.get("name",""),"score":g.get("reviewScore") or 0,
@@ -172,7 +172,7 @@ if show_market and "📅 출시 추세" in tab_map:
                               labels={"score":"리뷰점수","rev_m":"수익(백만$)"})
             fig4.update_layout(height=380, plot_bgcolor="#0e1117",
                                paper_bgcolor="#0e1117", font=dict(color="white"))
-            st.plotly_chart(fig4, use_container_width=True)
+            st.plotly_chart(fig4, width='stretch')
 
 # ── 유저 활동 ─────────────────────────────────────────────
 if show_activity and "👥 유저 활동" in tab_map:
@@ -200,7 +200,7 @@ if show_activity and "👥 유저 활동" in tab_map:
                 fig_pt.update_layout(xaxis_title="평균 플레이타임 (h)", yaxis_title="게임 수",
                     height=300, plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"),
                     title="플레이타임 분포")
-                st.plotly_chart(fig_pt, use_container_width=True)
+                st.plotly_chart(fig_pt, width='stretch')
 
         with col2:
             # 팔로워 상위 10
@@ -212,7 +212,7 @@ if show_activity and "👥 유저 활동" in tab_map:
             fig_fol2.update_layout(xaxis_title="팔로워 (천)", height=300,
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"),
                 title="팔로워 상위 10개 게임")
-            st.plotly_chart(fig_fol2, use_container_width=True)
+            st.plotly_chart(fig_fol2, width='stretch')
 
         # 플레이타임 구간
         bucket_sums = {}
@@ -231,7 +231,7 @@ if show_activity and "👥 유저 활동" in tab_map:
             fig_bd.update_layout(xaxis_title="플레이타임 구간", yaxis_title="평균 비율 (%)",
                 height=260, plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                 font=dict(color="white"), title="플레이타임 구간별 유저 비율")
-            st.plotly_chart(fig_bd, use_container_width=True)
+            st.plotly_chart(fig_bd, width='stretch')
 
 # ── 시계열 히스토리 ───────────────────────────────────────
 if show_history and "📈 시계열 히스토리" in tab_map:
@@ -258,7 +258,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
                                   yaxis2=dict(title="판매(백만장)",overlaying="y",side="right"),
                                   height=360, plot_bgcolor="#0e1117",
                                   paper_bgcolor="#0e1117", font=dict(color="white"))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
 
             with metric_tabs[1]:
                 fig = go.Figure()
@@ -271,7 +271,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
                 fig.update_layout(yaxis_title="CCU", height=360,
                                   plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                   font=dict(color="white"))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
 
             with metric_tabs[2]:
                 fig = go.Figure()
@@ -285,7 +285,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
                                   yaxis2=dict(title="플레이타임(h)",overlaying="y",side="right"),
                                   height=360, plot_bgcolor="#0e1117",
                                   paper_bgcolor="#0e1117", font=dict(color="white"))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
 
             with metric_tabs[3]:
                 fig = go.Figure()
@@ -298,7 +298,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
                                   yaxis2=dict(title="팔로워",overlaying="y",side="right"),
                                   height=360, plot_bgcolor="#0e1117",
                                   paper_bgcolor="#0e1117", font=dict(color="white"))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
 
 # ── 국가별 분포 ───────────────────────────────────────────
 if show_country and "🌍 국가별 분포" in tab_map:
@@ -317,13 +317,13 @@ if show_country and "🌍 국가별 분포" in tab_map:
                 fig_c.update_layout(xaxis_title="비율 (%)", height=500,
                                     plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                     font=dict(color="white"))
-                st.plotly_chart(fig_c, use_container_width=True)
+                st.plotly_chart(fig_c, width='stretch')
             with col2:
                 fig_p = go.Figure(go.Pie(labels=names[:10], values=pcts[:10],
                                          hole=0.35, textinfo="label+percent"))
                 fig_p.update_layout(height=500, paper_bgcolor="#0e1117",
                                     font=dict(color="white"), showlegend=False)
-                st.plotly_chart(fig_p, use_container_width=True)
+                st.plotly_chart(fig_p, width='stretch')
 
 # ── 유저 겹침 ─────────────────────────────────────────────
 if show_overlap and "🔗 유저 겹침" in tab_map:
@@ -362,7 +362,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                     "겹침 광범위성": f"{o['overlap_pct']}%",
                     "장르": ", ".join(o["genres"][:3]) if o["genres"] else "-",
                 })
-            st.dataframe(pd.DataFrame(ol_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(ol_rows), width='stretch', hide_index=True)
 
             # ── 버블 차트 ──────────────────────────────────────
             st.markdown("#### 타겟 유저 맵 — Link × 유저 규모")
@@ -411,7 +411,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                     paper_bgcolor="#0e1117",
                     font=dict(color="white"),
                 )
-                st.plotly_chart(fig_bubble, use_container_width=True)
+                st.plotly_chart(fig_bubble, width='stretch')
 
             # ── 바 차트: 추정 공유 유저 순 ──────────────────────
             top15 = sorted(overlaps, key=lambda x: x["reach_score"], reverse=True)[:15]
@@ -438,7 +438,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                 paper_bgcolor="#0e1117",
                 font=dict(color="white"),
             )
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, width='stretch')
 
 # ── 게임 목록 ─────────────────────────────────────────────
 if show_table and "📋 게임 목록" in tab_map:
@@ -464,7 +464,7 @@ if show_table and "📋 게임 목록" in tab_map:
                          "국가Top1": sorted((_parse_field(g.get("countryData"), default={}) or {}).items(),
                                            key=lambda x:x[1],reverse=True)[0][0].upper()
                                      if _parse_field(g.get("countryData"), default={}) else "-"})
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
 
 # ── AI 분석 ───────────────────────────────────────────────
 with tab_map["🤖 AI 분석"]:
