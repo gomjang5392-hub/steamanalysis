@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+
+# 원본 JSON (641MB) — Parquet으로 대체
+raw_data/games/*.json
+
+# API 키 포함 파일 — 절대 올리지 않음
+.streamlit/secrets.toml
+
+# 기타 불필요 파일
+raw_data/games/_progress.json
+Game Detail data/
+processed_data/

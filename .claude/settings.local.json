@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:api.gamalytic.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:gamalytic.com)",
+      "Bash(curl:*)",
+      "Bash(pip show:*)",
+      "Bash(pip3 show:*)",
+      "Bash(python -m pip:*)",
+      "Bash(python scripts/collect_data.py:*)",
+      "Bash(python scripts/process_data.py:*)",
+      "Bash(python:*)",
+      "Bash(dir:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2, ensure_ascii=False\\)\\)\")",
+      "WebFetch(domain:github.com)",
+      "Bash(wc:*)",
+      "Bash(tail:*)"
+    ]
+  }
+}
