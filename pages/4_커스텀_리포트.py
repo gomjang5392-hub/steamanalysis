@@ -480,14 +480,14 @@ with st.expander(
                         st.plotly_chart(fig, use_container_width=True)
 
                     # 전체 수치 테이블
-                    with st.expander("전체 수치 보기"):
-                        df_show = df_h.rename(columns={
-                            "period":"기간","sales_inc":"판매증분","revenue_inc":"수익증분($)",
-                            "avg_ccu":"평균CCU","max_ccu":"최대CCU","total_ccu":"총CCU",
-                            "avg_score":"평균점수","avg_playtime":"플레이타임(h)",
-                            "avg_price":"평균가격($)","avg_followers":"평균팔로워",
-                            "avg_wishlists":"평균위시리스트","total_games":"게임수"})
-                        st.dataframe(df_show, use_container_width=True, hide_index=True)
+                    st.markdown("**전체 수치**")
+                    df_show = df_h.rename(columns={
+                        "period":"기간","sales_inc":"판매증분","revenue_inc":"수익증분($)",
+                        "avg_ccu":"평균CCU","max_ccu":"최대CCU","total_ccu":"총CCU",
+                        "avg_score":"평균점수","avg_playtime":"플레이타임(h)",
+                        "avg_price":"평균가격($)","avg_followers":"평균팔로워",
+                        "avg_wishlists":"평균위시리스트","total_games":"게임수"})
+                    st.dataframe(df_show, use_container_width=True, hide_index=True)
 
         # ── 국가별 탭 ────────────────────────────────────
         if inc_country and "🌍 국가별" in ptab:
