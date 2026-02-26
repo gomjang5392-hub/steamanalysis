@@ -2,7 +2,8 @@
 프롬프트 기반 커스텀 HTML 리포트 생성 페이지
 기본 지표 + 유저 활동 / 시계열 히스토리 / 국가별 데이터 / 유저 겹침 선택 가능
 """
-import sys, os, math
+import sys, os, math, re
+import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from datetime import datetime
@@ -15,6 +16,30 @@ import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ── Chart.js 인라인 삽입 (Streamlit Cloud iframe CDN 차단 우회) ───────────
+@st.cache_data(ttl=3600)
+def _fetch_chartjs() -> str:
+    """Chart.js 미니파이 버전을 CDN에서 가져와 캐시."""
+    try:
+        url = "https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.read().decode("utf-8")
+    except Exception:
+        return ""
+
+def _inline_cdn_scripts(html: str) -> str:
+    """CDN Chart.js 스크립트 태그를 인라인 코드로 교체."""
+    chartjs = _fetch_chartjs()
+    if chartjs:
+        html = re.sub(
+            r'<script\b[^>]+src=["\'][^"\']*chart\.js[^"\']*["\'][^>]*>\s*</script>',
+            f'<script>\n{chartjs}\n</script>',
+            html,
+            flags=re.IGNORECASE,
+        )
+    return html
 
 st.set_page_config(page_title="커스텀 리포트", page_icon="📋", layout="wide")
 
@@ -731,6 +756,9 @@ if generate_btn:
             full_html = full_html[full_html.index("<!DOCTYPE html>"):]
         elif "<html" in full_html:
             full_html = full_html[full_html.index("<html"):]
+
+        # CDN 스크립트 인라인 삽입 (iframe CSP 우회 → 차트 정상 표시)
+        full_html = _inline_cdn_scripts(full_html)
 
         st.session_state["generated_html"]   = full_html
         st.session_state["generated_at"]     = datetime.now().strftime("%Y%m%d_%H%M%S")
