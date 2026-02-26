@@ -21,7 +21,7 @@ from analysis.data_loader import (
     get_all_tags, get_all_genres,
     get_history_aggregate, get_country_aggregate,
     get_activity_summary, get_audience_overlap_top,
-    summarize_full_for_claude,
+    summarize_full_for_claude, _parse_field,
 )
 from analysis.claude_client import stream_analysis, check_api_key
 from analysis.prompts import SYSTEM_PROMPT, build_dev_guide_prompt
@@ -244,7 +244,7 @@ if show_activity and "👥 유저 활동" in tab_map:
         bucket_sums = {}
         cnt = 0
         for g in filtered:
-            dist = (g.get("playtimeData") or {}).get("distribution") or {}
+            dist = (_parse_field(g.get("playtimeData"), default={}) or {}).get("distribution") or {}
             if dist:
                 for b, pct in dist.items():
                     bucket_sums[b] = bucket_sums.get(b, 0) + pct

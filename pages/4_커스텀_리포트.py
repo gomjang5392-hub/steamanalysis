@@ -22,7 +22,7 @@ from analysis.data_loader import (
     load_all_games, filter_games, get_all_tags, get_all_genres,
     get_yearly_trends, get_activity_summary,
     get_history_aggregate, get_country_aggregate,
-    get_audience_overlap_top, summarize_full_for_claude,
+    get_audience_overlap_top, summarize_full_for_claude, _parse_field,
 )
 from analysis.claude_client import stream_report, check_api_key
 from analysis.prompts import SYSTEM_PROMPT_REPORT, build_custom_report_prompt
@@ -368,7 +368,7 @@ with st.expander(
                     # 플레이타임 구간 비율
                     bucket_sums = {}; cnt = 0
                     for g in filtered:
-                        dist = (g.get("playtimeData") or {}).get("distribution") or {}
+                        dist = (_parse_field(g.get("playtimeData"), default={}) or {}).get("distribution") or {}
                         if dist:
                             for b, pct in dist.items():
                                 bucket_sums[b] = bucket_sums.get(b, 0) + pct

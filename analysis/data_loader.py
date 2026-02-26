@@ -15,44 +15,54 @@ GAMES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "raw_data",
 PARQUET_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "raw_data", "games_data.parquet")
 
 
-def _parse_parquet_value(val):
-    """Parquet에서 읽은 값을 원래 Python 타입으로 복원."""
-    import math
-    # NaN / None 처리
-    try:
-        if isinstance(val, float) and math.isnan(val):
-            return None
-    except TypeError:
-        pass
+# 메모리 절감을 위해 초기 로드 시 문자열로 보관하는 heavy 필드
+# (각 접근 함수에서 _parse_field()로 lazy 파싱)
+_LAZY_JSON_FIELDS = {"history", "audienceOverlap", "countryData", "playtimeData"}
+
+
+def _parse_field(val, default=None):
+    """JSON 문자열이면 파싱, 이미 파이썬 객체면 그대로 반환."""
     if val is None:
-        return None
-    # JSON 직렬화된 dict/list 복원 ([ 또는 { 로 시작하는 문자열)
+        return default
+    if isinstance(val, (list, dict)):
+        return val
     if isinstance(val, str) and val and val[0] in ('[', '{'):
         try:
-            parsed = json.loads(val)
-            if isinstance(parsed, (list, dict)):
-                return parsed
+            return json.loads(val)
         except Exception:
             pass
-    return val
+    return default
 
 
 @st.cache_data(show_spinner="게임 데이터 로딩 중...")
 def load_all_games() -> list[dict]:
     """
     Parquet 우선 로드 → 없으면 JSON 폴백.
-    Streamlit Cloud 배포 시 Parquet 파일 사용.
+    heavy 필드(history, audienceOverlap 등)는 JSON 문자열로 보관해 메모리 절감.
     """
     import pandas as pd
+    import numpy as np
 
-    # Parquet 파일이 있으면 우선 사용
     if os.path.exists(PARQUET_PATH):
         df = pd.read_parquet(PARQUET_PATH)
-        games = []
-        for _, row in df.iterrows():
-            game = {col: _parse_parquet_value(row[col]) for col in df.columns}
-            games.append(game)
-        return games
+
+        # _LAZY_JSON_FIELDS 제외한 JSON 문자열 컬럼을 벡터화 파싱 (iterrows 대비 10~20배 빠름)
+        for col in df.select_dtypes(include="object").columns:
+            if col in _LAZY_JSON_FIELDS:
+                continue
+            sample = df[col].dropna()
+            if sample.empty:
+                continue
+            first = sample.iloc[0]
+            if isinstance(first, str) and first and first[0] in ('[', '{'):
+                df[col] = df[col].map(
+                    lambda v: json.loads(v) if isinstance(v, str) and v else v,
+                    na_action='ignore'
+                )
+
+        # NaN → None
+        df = df.where(pd.notna(df), None)
+        return df.to_dict('records')
 
     # 폴백: JSON 개별 파일 로드 (로컬 개발용)
     pattern = os.path.join(GAMES_DIR, "*.json")
@@ -164,7 +174,7 @@ def get_yearly_trends(games: list[dict]) -> dict[int, dict]:
     totals: dict[int, dict] = defaultdict(lambda: {"revenue": 0, "sales": 0, "game_count": 0, "score_sum": 0, "score_count": 0})
 
     for game in games:
-        history = game.get("history") or []
+        history = _parse_field(game.get("history"), default=[])
         increments = _get_yearly_increments(history)
         for yr, data in increments.items():
             totals[yr]["revenue"] += data["revenue"]
@@ -263,7 +273,7 @@ def get_audience_overlap_network(games: list[dict]) -> list[dict]:
     for g in games:
         src_id = str(g.get("steamId"))
         src_name = g.get("name", src_id)
-        for overlap in (g.get("audienceOverlap") or []):
+        for overlap in _parse_field(g.get("audienceOverlap"), default=[]):
             tgt_id = str(overlap.get("steamId"))
             link = overlap.get("link", 0)
             if link < 0.1:
@@ -427,7 +437,7 @@ def get_history_aggregate(
     period_buckets: dict = defaultdict(lambda: defaultdict(list))
 
     for game in games:
-        history = sorted(game.get("history") or [], key=lambda x: x.get("timeStamp", 0))
+        history = sorted(_parse_field(game.get("history"), default=[]), key=lambda x: x.get("timeStamp", 0))
         if not history:
             continue
 
@@ -491,7 +501,7 @@ def get_history_aggregate(
 
 def get_history_for_game(game: dict, freq: str = "monthly") -> dict:
     """단일 게임의 history를 기간별로 정리."""
-    history = sorted(game.get("history") or [], key=lambda x: x.get("timeStamp", 0))
+    history = sorted(_parse_field(game.get("history"), default=[]), key=lambda x: x.get("timeStamp", 0))
     by_period: dict = {}
     for item in history:
         ts = item.get("timeStamp")
@@ -554,7 +564,7 @@ def get_country_aggregate(
     total_weight = 0.0
 
     for g in games:
-        cd = g.get("countryData") or {}
+        cd = _parse_field(g.get("countryData"), default={})
         if not isinstance(cd, dict) or not cd:
             continue
         if weight_by == "revenue":
@@ -635,7 +645,7 @@ def get_audience_overlap_top(
     overlap_data: dict = defaultdict(list)
 
     for g in games:
-        for ao in (g.get("audienceOverlap") or []):
+        for ao in _parse_field(g.get("audienceOverlap"), default=[]):
             sid = ao.get("steamId")
             link = ao.get("link") or 0
             if link > 0.05:

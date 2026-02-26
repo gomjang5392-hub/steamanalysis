@@ -1,6 +1,7 @@
 """
 분석 유형별 시스템 프롬프트 + 사용자 프롬프트 빌더.
 """
+from analysis.data_loader import _parse_field
 
 SYSTEM_PROMPT = """당신은 Steam 게임 시장 전문 애널리스트입니다.
 
@@ -348,7 +349,7 @@ def build_custom_report_prompt(
     # 국가별 집계
     country_agg: dict = defaultdict(float)
     for g in filtered_games:
-        cd = g.get("countryData") or {}
+        cd = _parse_field(g.get("countryData"), default={})
         if isinstance(cd, dict):
             for country, pct in cd.items():
                 country_agg[country] += pct
@@ -357,7 +358,7 @@ def build_custom_report_prompt(
     # 플레이타임 분포 평균
     pt_buckets: dict = defaultdict(float)
     for g in filtered_games:
-        pd_data = g.get("playtimeData") or {}
+        pd_data = _parse_field(g.get("playtimeData"), default={})
         dist = pd_data.get("distribution") or {}
         for bucket, pct in dist.items():
             pt_buckets[bucket] += pct

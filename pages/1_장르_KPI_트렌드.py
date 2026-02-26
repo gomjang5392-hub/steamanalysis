@@ -23,7 +23,7 @@ from analysis.data_loader import (
     get_history_aggregate, get_history_for_game,
     get_country_aggregate, get_activity_summary,
     get_audience_overlap_top, summarize_full_for_claude,
-    _release_year,
+    _release_year, _parse_field,
 )
 from analysis.claude_client import stream_analysis, check_api_key
 from analysis.prompts import SYSTEM_PROMPT, build_genre_trend_prompt
@@ -269,7 +269,7 @@ if show_activity and "👥 유저 활동" in tab_map:
         bucket_sums = {}
         cnt = 0
         for g in filtered:
-            dist = (g.get("playtimeData") or {}).get("distribution") or {}
+            dist = (_parse_field(g.get("playtimeData"), default={}) or {}).get("distribution") or {}
             if dist:
                 for b, pct in dist.items():
                     bucket_sums[b] = bucket_sums.get(b, 0) + pct
@@ -444,7 +444,7 @@ if show_country and "🌍 국가별 분포" in tab_map:
             with st.expander("국가별 상세 데이터 (상위 20개 게임)"):
                 country_rows = []
                 for g in sorted(filtered, key=lambda x: x.get("revenue") or 0, reverse=True)[:20]:
-                    cd = g.get("countryData") or {}
+                    cd = _parse_field(g.get("countryData"), default={})
                     if not cd: continue
                     row = {"게임명": g.get("name","?")}
                     top5 = sorted(cd.items(), key=lambda x: x[1], reverse=True)[:5]
