@@ -459,8 +459,8 @@ if show_table and "📋 게임 목록" in tab_map:
                          "판매량(M)":f"{(g.get('copiesSold') or 0)/1e6:.2f}",
                          "리뷰점수":g.get("reviewScore") or 0,
                          "플레이타임(h)":f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
-                         "팔로워":f"{(g.get('followers') or 0):,}",
-                         "위시리스트":f"{(g.get('wishlists') or 0):,}",
+                         "팔로워":f"{(g.get('followers') or 0):,.0f}",
+                         "위시리스트":f"{(g.get('wishlists') or 0):,.0f}",
                          "국가Top1": sorted((_parse_field(g.get("countryData"), default={}) or {}).items(),
                                            key=lambda x:x[1],reverse=True)[0][0].upper()
                                      if _parse_field(g.get("countryData"), default={}) else "-"})

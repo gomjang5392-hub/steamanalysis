@@ -283,8 +283,8 @@ if show_activity and "👥 유저 활동" in tab_map:
         st.markdown("**팔로워 상위 10개 게임**")
         top_fol = sorted(filtered, key=lambda x: x.get("followers") or 0, reverse=True)[:10]
         fol_rows = [{"게임명": g.get("name",""),
-                     "팔로워": f"{(g.get('followers') or 0):,}",
-                     "위시리스트": f"{(g.get('wishlists') or 0):,}",
+                     "팔로워": f"{(g.get('followers') or 0):,.0f}",
+                     "위시리스트": f"{(g.get('wishlists') or 0):,.0f}",
                      "리뷰점수": g.get("reviewScore", 0),
                      "플레이타임(h)": f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.')}
                     for g in top_fol]
@@ -608,10 +608,10 @@ if show_game_table and "📋 게임 목록" in tab_map:
                 "수익($M)": f"{(g.get('revenue') or 0)/1e6:.2f}",
                 "판매량(M)": f"{(g.get('copiesSold') or 0)/1e6:.2f}",
                 "리뷰점수": g.get("reviewScore") or 0,
-                "리뷰수": f"{(g.get('reviews') or 0):,}",
+                "리뷰수": f"{(g.get('reviews') or 0):,.0f}",
                 "플레이타임(h)": f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
-                "팔로워": f"{(g.get('followers') or 0):,}",
-                "위시리스트": f"{(g.get('wishlists') or 0):,}",
+                "팔로워": f"{(g.get('followers') or 0):,.0f}",
+                "위시리스트": f"{(g.get('wishlists') or 0):,.0f}",
                 "Steam 비율": f"{(g.get('steamPercent') or 0):.2f}",
                 "태그": ", ".join((g.get("tags") or [])[:5]),
             })

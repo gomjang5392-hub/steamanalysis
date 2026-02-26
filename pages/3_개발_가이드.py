@@ -96,18 +96,18 @@ if not filtered:
     st.stop()
 
 # ── KPI 카드 ─────────────────────────────────────────────
-revenues  = [g.get("revenue") or 0 for g in filtered]
-sales_lst = [g.get("copiesSold") or 0 for g in filtered]
-scores    = [g.get("reviewScore") or 0 for g in filtered if g.get("reviewScore")]
-playtimes = [g.get("avgPlaytime") or 0 for g in filtered if g.get("avgPlaytime")]
-ccus      = [g.get("players") or 0 for g in filtered if g.get("players")]
+revenues   = [g.get("revenue") or 0 for g in filtered]
+sales_lst  = [g.get("copiesSold") or 0 for g in filtered]
+scores     = [g.get("reviewScore") or 0 for g in filtered if g.get("reviewScore")]
+playtimes  = [g.get("avgPlaytime") or 0 for g in filtered if g.get("avgPlaytime")]
+followers_ = [g.get("followers") or 0 for g in filtered if g.get("followers")]
 
 c1,c2,c3,c4,c5 = st.columns(5)
 c1.metric("분석 게임 수",   f"{len(filtered):,}개")
 c2.metric("평균 수익",      f"${sum(revenues)/len(revenues)/1e6:.2f}M")
 c3.metric("평균 판매량",    f"{sum(sales_lst)/len(sales_lst)/1e6:.2f}M장")
 c4.metric("평균 리뷰 점수", f"{sum(scores)/len(scores):.1f}" if scores else "-")
-c5.metric("평균 CCU",       f"{sum(ccus)/len(ccus):,.0f}" if ccus else "-")
+c5.metric("평균 팔로워",    f"{sum(followers_)/len(followers_):,.0f}" if followers_ else "-")
 
 st.divider()
 
@@ -133,14 +133,13 @@ with tab_map["🏆 벤치마크"]:
         ts = g.get("releaseDate") or g.get("firstReleaseDate")
         yr = datetime.fromtimestamp(int(ts)/1000).year if ts else "?"
         rows.append({"#":i,"게임명":g.get("name",""),"출시":yr,
-                     "가격($)":g.get("price") or 0,
-                     "수익($M)":round((g.get("revenue") or 0)/1e6,2),
-                     "판매량(M)":round((g.get("copiesSold") or 0)/1e6,2),
+                     "가격($)":f"${g.get('price') or 0:.2f}",
+                     "수익($M)":f"{(g.get('revenue') or 0)/1e6:.2f}",
+                     "판매량(M)":f"{(g.get('copiesSold') or 0)/1e6:.2f}",
                      "리뷰점수":g.get("reviewScore") or 0,
-                     "CCU":f"{(g.get('players') or 0):,}",
-                     "플레이타임(h)":round(g.get("avgPlaytime") or 0,1),
-                     "팔로워":f"{(g.get('followers') or 0):,}",
-                     "위시리스트":f"{(g.get('wishlists') or 0):,}",
+                     "플레이타임(h)":f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
+                     "팔로워":f"{(g.get('followers') or 0):,.0f}",
+                     "위시리스트":f"{(g.get('wishlists') or 0):,.0f}",
                      "태그":", ".join((g.get("tags") or [])[:4])})
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
@@ -194,10 +193,10 @@ if show_activity and "👥 유저 활동" in tab_map:
 
         kpi_cols = st.columns(5)
         for i, (key, label, unit) in enumerate([
-            ("players_ccu","평균 CCU",""),
-            ("avg_playtime","평균 플레이타임","h"),
             ("followers","평균 팔로워",""),
+            ("avg_playtime","평균 플레이타임","h"),
             ("wishlists","평균 위시리스트",""),
+            ("reviews","평균 리뷰수",""),
             ("review_score","평균 리뷰점수",""),
         ]):
             kpi_cols[i].metric(label, f"{activity.get(key,{}).get('avg',0):,.0f}{unit}")
@@ -205,19 +204,19 @@ if show_activity and "👥 유저 활동" in tab_map:
         col1, col2 = st.columns(2)
 
         with col1:
-            # CCU vs 판매량
+            # 팔로워 vs 판매량
             rows = [{"name":g.get("name",""),
-                     "ccu_k":(g.get("players") or 0)/1000,
+                     "fol_k":(g.get("followers") or 0)/1000,
                      "sales_m":(g.get("copiesSold") or 0)/1e6,
                      "score":g.get("reviewScore") or 0}
-                    for g in filtered if g.get("players")]
+                    for g in filtered if g.get("followers")]
             if rows:
                 df_cs = pd.DataFrame(rows)
-                fig_cs = px.scatter(df_cs, x="ccu_k", y="sales_m", color="score",
+                fig_cs = px.scatter(df_cs, x="fol_k", y="sales_m", color="score",
                                     hover_name="name", color_continuous_scale="Viridis",
-                                    labels={"ccu_k":"CCU(천)","sales_m":"판매량(백만장)","score":"점수"},
+                                    labels={"fol_k":"팔로워(천)","sales_m":"판매량(백만장)","score":"점수"},
                                     size_max=12)
-                fig_cs.update_layout(title="CCU vs 판매량", height=320,
+                fig_cs.update_layout(title="팔로워 vs 판매량", height=320,
                                      plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                      font=dict(color="white"))
                 st.plotly_chart(fig_cs, use_container_width=True)

@@ -431,8 +431,8 @@ with st.expander(
                 rows = [{"게임명": g.get("name",""),
                          "플레이타임(h)": f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
                          "리뷰점수": g.get("reviewScore") or 0,
-                         "팔로워": f"{(g.get('followers') or 0):,}",
-                         "위시리스트": f"{(g.get('wishlists') or 0):,}"}
+                         "팔로워": f"{(g.get('followers') or 0):,.0f}",
+                         "위시리스트": f"{(g.get('wishlists') or 0):,.0f}"}
                         for g in top10]
                 st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
