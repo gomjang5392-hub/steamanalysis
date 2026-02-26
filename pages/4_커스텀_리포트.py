@@ -698,7 +698,7 @@ with st.expander("⚙️ 프롬프트 고급 설정", expanded=False):
 col_btn1, col_btn2, _ = st.columns([1, 1, 4])
 with col_btn1:
     generate_btn = st.button("🚀 리포트 생성", type="primary",
-        width='stretch',
+        use_container_width=True,
         disabled=len(filtered) == 0 or not user_prompt.strip())
 
 if not user_prompt.strip():
@@ -800,7 +800,7 @@ if "generated_html" in st.session_state:
             data=full_html.encode("utf-8"),
             file_name=f"steam_report_{gen_at}.html",
             mime="text/html",
-            width='stretch',
+            use_container_width=True,
             type="primary",
         )
     with dl2:

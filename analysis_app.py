@@ -181,7 +181,7 @@ for genre, stat in list(genre_stats.items())[:10]:
 
 st.dataframe(
     pd.DataFrame(genre_rows),
-    width='stretch',
+    use_container_width=True,
     hide_index=True,
 )
 
