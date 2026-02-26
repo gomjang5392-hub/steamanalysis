@@ -101,7 +101,7 @@ c1.metric("출시 게임 수",   f"{len(filtered):,}개")
 c2.metric("총 수익",        f"${sum(revenues)/1e9:.2f}B")
 c3.metric("평균 수익",      f"${sum(revenues)/len(revenues)/1e6:.2f}M")
 c4.metric("히트작(100만+)", f"{hit_cnt}개")
-c5.metric("평균 CCU",       f"{sum(ccus)/len(ccus):,.0f}" if ccus else "-")
+c5.metric("평균 PCCU",      f"{sum(ccus)/len(ccus):,.0f}" if ccus else "-")
 c6.metric("평균 리뷰점수",  f"{sum(scores)/len(scores):.1f}" if scores else "-")
 
 st.divider()
@@ -184,7 +184,7 @@ if show_activity and "👥 유저 활동" in tab_map:
 
         kpi_cols = st.columns(5)
         kpi_data = [
-            ("평균 CCU",       activity.get("players_ccu",{}).get("avg",0), ""),
+            ("평균 PCCU",      activity.get("players_ccu",{}).get("avg",0), ""),
             ("평균 리뷰점수",  activity.get("review_score",{}).get("avg",0), ""),
             ("평균 플레이타임",activity.get("avg_playtime",{}).get("avg",0), "h"),
             ("평균 팔로워",    activity.get("followers",{}).get("avg",0), ""),
@@ -212,9 +212,9 @@ if show_activity and "👥 유저 활동" in tab_map:
                 x=[(g.get("players") or 0)/1000 for g in top10_ccu][::-1],
                 y=[g.get("name","")[:25] for g in top10_ccu][::-1],
                 orientation="h", marker_color="rgba(79,195,247,0.8)"))
-            fig_ccu.update_layout(xaxis_title="CCU (천 명)", height=300,
+            fig_ccu.update_layout(xaxis_title="PCCU (천 명)", height=300,
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"),
-                title="CCU 상위 10개 게임")
+                title="PCCU 상위 10개 게임")
             st.plotly_chart(fig_ccu, use_container_width=True)
 
         # 플레이타임 구간
@@ -248,7 +248,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
         else:
             df_h = pd.DataFrame([{"period": p, **v} for p, v in hist_data.items()])
 
-            metric_tabs = st.tabs(["수익·판매", "CCU", "점수·플레이타임", "가격·팔로워"])
+            metric_tabs = st.tabs(["수익·판매", "PCCU", "점수·플레이타임", "가격·팔로워"])
 
             with metric_tabs[0]:
                 fig = go.Figure()
@@ -266,12 +266,12 @@ if show_history and "📈 시계열 히스토리" in tab_map:
             with metric_tabs[1]:
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=df_h.period, y=df_h.avg_ccu,
-                                         name="평균 CCU", fill="tozeroy",
+                                         name="평균 PCCU", fill="tozeroy",
                                          fillcolor="rgba(79,195,247,0.15)",
                                          line=dict(color="#4fc3f7",width=2)))
                 fig.add_trace(go.Scatter(x=df_h.period, y=df_h.max_ccu,
-                                         name="최대 CCU", line=dict(color="#ff7043",width=1,dash="dot")))
-                fig.update_layout(yaxis_title="CCU", height=360,
+                                         name="최대 PCCU", line=dict(color="#ff7043",width=1,dash="dot")))
+                fig.update_layout(yaxis_title="PCCU", height=360,
                                   plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                   font=dict(color="white"))
                 st.plotly_chart(fig, use_container_width=True)
@@ -450,7 +450,7 @@ if show_table and "📋 게임 목록" in tab_map:
         sort_by = st.selectbox("정렬 기준",
             ["revenue","copiesSold","reviewScore","players","avgPlaytime"],
             format_func=lambda x: {"revenue":"수익","copiesSold":"판매량","reviewScore":"리뷰점수",
-                                   "players":"CCU","avgPlaytime":"플레이타임"}.get(x,x))
+                                   "players":"PCCU","avgPlaytime":"플레이타임"}.get(x,x))
         rows = []
         for g in sorted(filtered, key=lambda x: x.get(sort_by) or 0, reverse=True):
             ts = g.get("releaseDate") or g.get("firstReleaseDate")
@@ -461,7 +461,7 @@ if show_table and "📋 게임 목록" in tab_map:
                          "수익($M)":round((g.get("revenue") or 0)/1e6,2),
                          "판매량(M)":round((g.get("copiesSold") or 0)/1e6,2),
                          "리뷰점수":g.get("reviewScore") or 0,
-                         "CCU":f"{(g.get('players') or 0):,}",
+                         "PCCU":f"{(g.get('players') or 0):,}",
                          "플레이타임(h)":round(g.get("avgPlaytime") or 0,1),
                          "팔로워":f"{(g.get('followers') or 0):,}",
                          "위시리스트":f"{(g.get('wishlists') or 0):,}",

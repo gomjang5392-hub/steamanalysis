@@ -113,7 +113,7 @@ c1.metric("게임 수",        f"{len(filtered):,}개")
 c2.metric("평균 수익",      f"${(sum(revenues)/len(revenues)/1e6):.1f}M" if revenues else "-")
 c3.metric("평균 판매량",    f"{(sum(sales_lst)/len(sales_lst)/1e6):.2f}M장" if sales_lst else "-")
 c4.metric("평균 리뷰 점수", f"{(sum(scores)/len(scores)):.1f}" if scores else "-")
-c5.metric("평균 CCU",       f"{(sum(ccus)/len(ccus)):,.0f}" if ccus else "-")
+c5.metric("평균 PCCU",      f"{(sum(ccus)/len(ccus)):,.0f}" if ccus else "-")
 c6.metric("평균 플레이타임",f"{(sum(playtimes)/len(playtimes)):.0f}h" if playtimes else "-")
 
 st.divider()
@@ -202,7 +202,7 @@ if show_activity and "👥 유저 활동" in tab_map:
         # 지표 요약 카드
         metric_cols = st.columns(4)
         labels = {
-            "players_ccu": ("CCU (동시접속)", ""),
+            "players_ccu": ("PCCU (피크 동시접속)", ""),
             "avg_playtime": ("평균 플레이타임", "h"),
             "followers": ("팔로워", ""),
             "wishlists": ("위시리스트", ""),
@@ -218,14 +218,14 @@ if show_activity and "👥 유저 활동" in tab_map:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**CCU (동시접속자) 분포**")
+            st.markdown("**PCCU (피크 동시접속자) 분포**")
             ccu_vals = [g.get("players") or 0 for g in filtered if (g.get("players") or 0) > 0]
             if ccu_vals:
                 import numpy as np
                 fig_ccu = go.Figure(go.Histogram(
                     x=[v/1000 for v in ccu_vals], nbinsx=30,
                     marker_color="rgba(79,195,247,0.8)"))
-                fig_ccu.update_layout(xaxis_title="CCU (천 명)", yaxis_title="게임 수",
+                fig_ccu.update_layout(xaxis_title="PCCU (천 명)", yaxis_title="게임 수",
                     height=300, plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"))
                 st.plotly_chart(fig_ccu, use_container_width=True)
 
@@ -283,10 +283,10 @@ if show_activity and "👥 유저 활동" in tab_map:
                 height=280, plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"))
             st.plotly_chart(fig_pt_dist, use_container_width=True)
 
-        # Top 10 CCU 게임
-        st.markdown("**CCU 상위 10개 게임**")
+        # Top 10 PCCU 게임
+        st.markdown("**PCCU 상위 10개 게임**")
         top_ccu = sorted(filtered, key=lambda x: x.get("players") or 0, reverse=True)[:10]
-        ccu_rows = [{"게임명": g.get("name",""), "CCU": f"{(g.get('players') or 0):,}",
+        ccu_rows = [{"게임명": g.get("name",""), "PCCU": f"{(g.get('players') or 0):,}",
                      "리뷰점수": g.get("reviewScore", 0),
                      "플레이타임(h)": round(g.get("avgPlaytime") or 0, 1),
                      "팔로워": f"{(g.get('followers') or 0):,}",
@@ -312,7 +312,7 @@ if show_history and "📅 시계열 히스토리" in tab_map:
             df_h = pd.DataFrame([{"period": p, **v} for p, v in hist_data.items()])
 
             metric_opt = st.selectbox("차트 지표 선택", [
-                "판매 증분 + 수익 증분", "CCU (동시접속자)", "리뷰 점수",
+                "판매 증분 + 수익 증분", "PCCU (피크 동시접속자)", "리뷰 점수",
                 "평균 플레이타임", "평균 가격", "팔로워"
             ], key="hist_metric")
 
@@ -329,16 +329,16 @@ if show_history and "📅 시계열 히스토리" in tab_map:
                                     paper_bgcolor="#0e1117", font=dict(color="white"),
                                     legend=dict(orientation="h",y=1.12))
 
-            elif metric_opt == "CCU (동시접속자)":
+            elif metric_opt == "PCCU (피크 동시접속자)":
                 fig_h = go.Figure()
                 fig_h.add_trace(go.Scatter(x=df_h.period, y=df_h.avg_ccu,
-                                           name="평균 CCU", line=dict(color="#4fc3f7",width=2),
+                                           name="평균 PCCU", line=dict(color="#4fc3f7",width=2),
                                            mode="lines+markers", fill="tozeroy",
                                            fillcolor="rgba(79,195,247,0.15)"))
                 fig_h.add_trace(go.Scatter(x=df_h.period, y=df_h.max_ccu,
-                                           name="최대 CCU", line=dict(color="#ff7043",width=1,dash="dot"),
+                                           name="최대 PCCU", line=dict(color="#ff7043",width=1,dash="dot"),
                                            mode="lines"))
-                fig_h.update_layout(yaxis_title="CCU", height=380,
+                fig_h.update_layout(yaxis_title="PCCU", height=380,
                                     plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                     font=dict(color="white"), legend=dict(orientation="h",y=1.12))
 
@@ -376,12 +376,12 @@ if show_history and "📅 시계열 히스토리" in tab_map:
 
             # 전체 지표 테이블
             with st.expander("전체 지표 수치 보기"):
-                df_show = df_h.copy()
-                df_show.columns = ["기간","판매증분","수익증분","평균CCU","최대CCU","총CCU",
+                df_show = df_h.drop(columns=["total_ccu"]).copy()
+                df_show.columns = ["기간","판매증분","수익증분","평균PCCU","최대PCCU",
                                    "평균점수","평균플레이타임","평균가격","평균팔로워","평균위시리스트","게임수"]
                 df_show["수익증분"] = df_show["수익증분"].apply(lambda x: f"${x:,.0f}")
                 df_show["판매증분"] = df_show["판매증분"].apply(lambda x: f"{x:,}")
-                df_show["평균CCU"] = df_show["평균CCU"].apply(lambda x: f"{x:,.0f}")
+                df_show["평균PCCU"] = df_show["평균PCCU"].apply(lambda x: f"{x:,.0f}")
                 st.dataframe(df_show, use_container_width=True, hide_index=True)
 
             # 단일 게임 히스토리 (선택)
@@ -396,7 +396,7 @@ if show_history and "📅 시계열 히스토리" in tab_map:
                     df_sg = pd.DataFrame([{"period": p, **v} for p, v in sg_hist.items()])
                     sg_metric = st.selectbox("지표", ["sales_inc","revenue_inc","ccu","score","playtime","followers","wishlists"], key="sg_metric",
                                              format_func=lambda x: {"sales_inc":"판매증분","revenue_inc":"수익증분",
-                                                                     "ccu":"CCU","score":"점수","playtime":"플레이타임",
+                                                                     "ccu":"PCCU","score":"점수","playtime":"플레이타임",
                                                                      "followers":"팔로워","wishlists":"위시리스트"}.get(x,x))
                     fig_sg = go.Figure(go.Scatter(
                         x=df_sg.period, y=df_sg[sg_metric],
@@ -589,7 +589,7 @@ if show_game_table and "📋 게임 목록" in tab_map:
 
         sort_by = st.selectbox("정렬 기준", ["revenue","copiesSold","reviewScore","players","avgPlaytime","wishlists"],
                                format_func=lambda x: {"revenue":"수익","copiesSold":"판매량",
-                                                       "reviewScore":"리뷰점수","players":"CCU",
+                                                       "reviewScore":"리뷰점수","players":"PCCU",
                                                        "avgPlaytime":"플레이타임","wishlists":"위시리스트"}.get(x,x),
                                key="table_sort")
         sorted_games = sorted(filtered, key=lambda x: x.get(sort_by) or 0, reverse=True)
@@ -607,7 +607,7 @@ if show_game_table and "📋 게임 목록" in tab_map:
                 "판매량(M)": round((g.get("copiesSold") or 0)/1e6, 2),
                 "리뷰점수": g.get("reviewScore") or 0,
                 "리뷰수": f"{(g.get('reviews') or 0):,}",
-                "CCU": f"{(g.get('players') or 0):,}",
+                "PCCU": f"{(g.get('players') or 0):,}",
                 "플레이타임(h)": round(g.get("avgPlaytime") or 0, 1),
                 "팔로워": f"{(g.get('followers') or 0):,}",
                 "위시리스트": f"{(g.get('wishlists') or 0):,}",

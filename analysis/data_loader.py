@@ -729,7 +729,7 @@ def summarize_full_for_claude(
         lines.append("\n## 유저 활동 지표")
         for key, stats in activity.items():
             label_map = {
-                "players_ccu": "CCU(동시접속)",
+                "players_ccu": "PCCU(피크 동시접속)",
                 "reviews": "리뷰 수",
                 "review_score": "리뷰 점수",
                 "avg_playtime": "평균 플레이타임(h)",
@@ -752,7 +752,7 @@ def summarize_full_for_claude(
             lines.append(
                 f"- {yr}년: 판매증분={data['sales_inc']:,} / "
                 f"수익증분=${data['revenue_inc']:,.0f} / "
-                f"평균CCU={data['avg_ccu']:,.0f} / "
+                f"평균PCCU={data['avg_ccu']:,.0f} / "
                 f"평균점수={data['avg_score']:.1f}"
             )
 
@@ -790,7 +790,7 @@ def summarize_full_for_claude(
         )
         if "유저 활동 지표" in selected_metrics:
             line += (
-                f" | CCU {(g.get('players') or 0):,} | "
+                f" | PCCU {(g.get('players') or 0):,} | "
                 f"플레이타임 {(g.get('avgPlaytime') or 0):.0f}h"
             )
         lines.append(line)

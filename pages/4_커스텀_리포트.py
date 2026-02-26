@@ -197,7 +197,7 @@ BASIC_FIELDS = {
     "가격":           "현재 판매 가격 ($)",
     "팔로워":         "Steam 팔로워 수",
     "위시리스트":     "위시리스트 수",
-    "CCU":            "현재 플레이어 수 (동시접속 추정)",
+    "PCCU":           "피크 동시접속자 (역대 최고)",
     "오너수":         "Steam 오너 수 (소유자)",
 }
 
@@ -311,7 +311,7 @@ FIELD_MAP = {
     "리뷰점수": "reviewScore", "리뷰수": "reviews",
     "평균플레이타임": "avgPlaytime", "가격": "price",
     "팔로워": "followers", "위시리스트": "wishlists",
-    "CCU": "players", "오너수": "owners",
+    "PCCU": "players", "오너수": "owners",
 }
 
 # ── 미리보기 탭 구성 ──────────────────────────────────────
@@ -364,7 +364,7 @@ with st.expander(
                 # KPI 행
                 a_cols = st.columns(5)
                 kpi_items = [
-                    ("CCU 평균",      "players_ccu",    ""),
+                    ("PCCU 평균",     "players_ccu",    ""),
                     ("리뷰점수 평균", "review_score",   ""),
                     ("플레이타임 평균","avg_playtime",  "h"),
                     ("팔로워 평균",   "followers",      ""),
@@ -383,8 +383,8 @@ with st.expander(
                         fig = go.Figure(go.Histogram(
                             x=[v/1000 for v in ccu_vals], nbinsx=25,
                             marker_color="rgba(79,195,247,0.8)"))
-                        fig.update_layout(xaxis_title="CCU (천명)", yaxis_title="게임 수",
-                            height=250, margin=dict(t=30,b=30), title="CCU 분포",
+                        fig.update_layout(xaxis_title="PCCU (천 명)", yaxis_title="게임 수",
+                            height=250, margin=dict(t=30,b=30), title="PCCU 분포",
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
                         st.plotly_chart(fig, use_container_width=True)
@@ -425,7 +425,7 @@ with st.expander(
 
                 # CCU 상위 10
                 top10 = sorted(filtered, key=lambda x: x.get("players") or 0, reverse=True)[:10]
-                rows = [{"게임명": g.get("name",""), "CCU": f"{(g.get('players') or 0):,}",
+                rows = [{"게임명": g.get("name",""), "PCCU": f"{(g.get('players') or 0):,}",
                          "플레이타임(h)": round(g.get("avgPlaytime") or 0, 1),
                          "리뷰점수": g.get("reviewScore") or 0,
                          "팔로워": f"{(g.get('followers') or 0):,}",
@@ -506,9 +506,9 @@ with st.expander(
 
                     # 전체 수치 테이블
                     st.markdown("**전체 수치**")
-                    df_show = df_h.rename(columns={
+                    df_show = df_h.drop(columns=["total_ccu"]).rename(columns={
                         "period":"기간","sales_inc":"판매증분","revenue_inc":"수익증분($)",
-                        "avg_ccu":"평균CCU","max_ccu":"최대CCU","total_ccu":"총CCU",
+                        "avg_ccu":"평균PCCU","max_ccu":"최대PCCU",
                         "avg_score":"평균점수","avg_playtime":"플레이타임(h)",
                         "avg_price":"평균가격($)","avg_followers":"평균팔로워",
                         "avg_wishlists":"평균위시리스트","total_games":"게임수"})
