@@ -93,16 +93,14 @@ if not filtered:
 revenues  = [g.get("revenue") or 0 for g in filtered]
 sales_lst = [g.get("copiesSold") or 0 for g in filtered]
 scores    = [g.get("reviewScore") or 0 for g in filtered if g.get("reviewScore")]
-ccus      = [g.get("players") or 0 for g in filtered if g.get("players")]
 hit_cnt   = sum(1 for s in sales_lst if s >= 1_000_000)
 
-c1,c2,c3,c4,c5,c6 = st.columns(6)
+c1,c2,c3,c4,c5 = st.columns(5)
 c1.metric("출시 게임 수",   f"{len(filtered):,}개")
 c2.metric("총 수익",        f"${sum(revenues)/1e9:.2f}B")
 c3.metric("평균 수익",      f"${sum(revenues)/len(revenues)/1e6:.2f}M")
 c4.metric("히트작(100만+)", f"{hit_cnt}개")
-c5.metric("평균 PCCU",      f"{sum(ccus)/len(ccus):,.0f}" if ccus else "-")
-c6.metric("평균 리뷰점수",  f"{sum(scores)/len(scores):.1f}" if scores else "-")
+c5.metric("평균 리뷰점수",  f"{sum(scores)/len(scores):.1f}" if scores else "-")
 
 st.divider()
 
@@ -182,9 +180,8 @@ if show_activity and "👥 유저 활동" in tab_map:
         st.subheader("유저 활동 지표")
         activity = get_activity_summary(filtered)
 
-        kpi_cols = st.columns(5)
+        kpi_cols = st.columns(4)
         kpi_data = [
-            ("평균 PCCU",      activity.get("players_ccu",{}).get("avg",0), ""),
             ("평균 리뷰점수",  activity.get("review_score",{}).get("avg",0), ""),
             ("평균 플레이타임",activity.get("avg_playtime",{}).get("avg",0), "h"),
             ("평균 팔로워",    activity.get("followers",{}).get("avg",0), ""),
@@ -206,16 +203,16 @@ if show_activity and "👥 유저 활동" in tab_map:
                 st.plotly_chart(fig_pt, use_container_width=True)
 
         with col2:
-            # CCU 상위 10
-            top10_ccu = sorted(filtered, key=lambda x: x.get("players") or 0, reverse=True)[:10]
-            fig_ccu = go.Figure(go.Bar(
-                x=[(g.get("players") or 0)/1000 for g in top10_ccu][::-1],
-                y=[g.get("name","")[:25] for g in top10_ccu][::-1],
+            # 팔로워 상위 10
+            top10_fol = sorted(filtered, key=lambda x: x.get("followers") or 0, reverse=True)[:10]
+            fig_fol2 = go.Figure(go.Bar(
+                x=[(g.get("followers") or 0)/1000 for g in top10_fol][::-1],
+                y=[g.get("name","")[:25] for g in top10_fol][::-1],
                 orientation="h", marker_color="rgba(79,195,247,0.8)"))
-            fig_ccu.update_layout(xaxis_title="PCCU (천 명)", height=300,
+            fig_fol2.update_layout(xaxis_title="팔로워 (천)", height=300,
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117", font=dict(color="white"),
-                title="PCCU 상위 10개 게임")
-            st.plotly_chart(fig_ccu, use_container_width=True)
+                title="팔로워 상위 10개 게임")
+            st.plotly_chart(fig_fol2, use_container_width=True)
 
         # 플레이타임 구간
         bucket_sums = {}
@@ -248,7 +245,7 @@ if show_history and "📈 시계열 히스토리" in tab_map:
         else:
             df_h = pd.DataFrame([{"period": p, **v} for p, v in hist_data.items()])
 
-            metric_tabs = st.tabs(["수익·판매", "PCCU", "점수·플레이타임", "가격·팔로워"])
+            metric_tabs = st.tabs(["수익·판매", "동시접속(히스토리)", "점수·플레이타임", "가격·팔로워"])
 
             with metric_tabs[0]:
                 fig = go.Figure()
@@ -448,9 +445,9 @@ if show_table and "📋 게임 목록" in tab_map:
     with tab_map["📋 게임 목록"]:
         st.subheader(f"전체 게임 목록 ({len(filtered)}개)")
         sort_by = st.selectbox("정렬 기준",
-            ["revenue","copiesSold","reviewScore","players","avgPlaytime"],
+            ["revenue","copiesSold","reviewScore","avgPlaytime","wishlists"],
             format_func=lambda x: {"revenue":"수익","copiesSold":"판매량","reviewScore":"리뷰점수",
-                                   "players":"PCCU","avgPlaytime":"플레이타임"}.get(x,x))
+                                   "avgPlaytime":"플레이타임","wishlists":"위시리스트"}.get(x,x))
         rows = []
         for g in sorted(filtered, key=lambda x: x.get(sort_by) or 0, reverse=True):
             ts = g.get("releaseDate") or g.get("firstReleaseDate")
@@ -461,7 +458,6 @@ if show_table and "📋 게임 목록" in tab_map:
                          "수익($M)":round((g.get("revenue") or 0)/1e6,2),
                          "판매량(M)":round((g.get("copiesSold") or 0)/1e6,2),
                          "리뷰점수":g.get("reviewScore") or 0,
-                         "PCCU":f"{(g.get('players') or 0):,}",
                          "플레이타임(h)":round(g.get("avgPlaytime") or 0,1),
                          "팔로워":f"{(g.get('followers') or 0):,}",
                          "위시리스트":f"{(g.get('wishlists') or 0):,}",

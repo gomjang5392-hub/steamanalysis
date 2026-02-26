@@ -197,7 +197,6 @@ BASIC_FIELDS = {
     "가격":           "현재 판매 가격 ($)",
     "팔로워":         "Steam 팔로워 수",
     "위시리스트":     "위시리스트 수",
-    "PCCU":           "피크 동시접속자 (역대 최고)",
     "오너수":         "Steam 오너 수 (소유자)",
 }
 
@@ -311,7 +310,7 @@ FIELD_MAP = {
     "리뷰점수": "reviewScore", "리뷰수": "reviews",
     "평균플레이타임": "avgPlaytime", "가격": "price",
     "팔로워": "followers", "위시리스트": "wishlists",
-    "PCCU": "players", "오너수": "owners",
+ "오너수": "owners",
 }
 
 # ── 미리보기 탭 구성 ──────────────────────────────────────
@@ -364,7 +363,7 @@ with st.expander(
                 # KPI 행
                 a_cols = st.columns(5)
                 kpi_items = [
-                    ("PCCU 평균",     "players_ccu",    ""),
+                    ("팔로워 평균",   "followers",      ""),
                     ("리뷰점수 평균", "review_score",   ""),
                     ("플레이타임 평균","avg_playtime",  "h"),
                     ("팔로워 평균",   "followers",      ""),
@@ -377,14 +376,14 @@ with st.expander(
                 col1, col2, col3 = st.columns(3)
 
                 with col1:
-                    # CCU 분포
-                    ccu_vals = [g.get("players") or 0 for g in filtered if (g.get("players") or 0) > 0]
-                    if ccu_vals:
+                    # 위시리스트 분포
+                    wish_vals = [g.get("wishlists") or 0 for g in filtered if (g.get("wishlists") or 0) > 0]
+                    if wish_vals:
                         fig = go.Figure(go.Histogram(
-                            x=[v/1000 for v in ccu_vals], nbinsx=25,
+                            x=[v/1000 for v in wish_vals], nbinsx=25,
                             marker_color="rgba(79,195,247,0.8)"))
-                        fig.update_layout(xaxis_title="PCCU (천 명)", yaxis_title="게임 수",
-                            height=250, margin=dict(t=30,b=30), title="PCCU 분포",
+                        fig.update_layout(xaxis_title="위시리스트 (천)", yaxis_title="게임 수",
+                            height=250, margin=dict(t=30,b=30), title="위시리스트 분포",
                             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                             font=dict(color="white"))
                         st.plotly_chart(fig, use_container_width=True)
@@ -425,7 +424,7 @@ with st.expander(
 
                 # CCU 상위 10
                 top10 = sorted(filtered, key=lambda x: x.get("players") or 0, reverse=True)[:10]
-                rows = [{"게임명": g.get("name",""), "PCCU": f"{(g.get('players') or 0):,}",
+                rows = [{"게임명": g.get("name",""),
                          "플레이타임(h)": round(g.get("avgPlaytime") or 0, 1),
                          "리뷰점수": g.get("reviewScore") or 0,
                          "팔로워": f"{(g.get('followers') or 0):,}",

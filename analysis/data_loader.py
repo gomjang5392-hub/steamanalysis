@@ -612,7 +612,6 @@ def get_activity_summary(games: list[dict]) -> dict:
         }
 
     return {
-        "players_ccu": _stats([g.get("players") or 0 for g in games]),
         "reviews": _stats([g.get("reviews") or 0 for g in games]),
         "review_score": _stats([g.get("reviewScore") or 0 for g in games]),
         "avg_playtime": _stats([g.get("avgPlaytime") or 0 for g in games]),
@@ -729,7 +728,6 @@ def summarize_full_for_claude(
         lines.append("\n## 유저 활동 지표")
         for key, stats in activity.items():
             label_map = {
-                "players_ccu": "PCCU(피크 동시접속)",
                 "reviews": "리뷰 수",
                 "review_score": "리뷰 점수",
                 "avg_playtime": "평균 플레이타임(h)",
@@ -790,7 +788,7 @@ def summarize_full_for_claude(
         )
         if "유저 활동 지표" in selected_metrics:
             line += (
-                f" | PCCU {(g.get('players') or 0):,} | "
+                f" | "
                 f"플레이타임 {(g.get('avgPlaytime') or 0):.0f}h"
             )
         lines.append(line)
