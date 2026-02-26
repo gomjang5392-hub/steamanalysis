@@ -64,6 +64,99 @@ def _inline_cdn_scripts(html: str) -> str:
 
     return html
 
+def _generate_plotly_charts(analysis_games: list, yearly_trends: dict) -> str:
+    """Plotly로 핵심 차트 4종 생성 → Plotly.js 인라인 포함 HTML 반환 (CDN 불필요)."""
+    import plotly.io as pio
+    from collections import Counter, defaultdict
+
+    figs = []
+
+    # 1. 상위 10개 게임 수익 바차트
+    top10 = sorted(analysis_games, key=lambda x: x.get("revenue") or 0, reverse=True)[:10]
+    if top10:
+        names  = [g.get("name", "?")[:30] for g in reversed(top10)]
+        revs   = [(g.get("revenue") or 0) / 1e6 for g in reversed(top10)]
+        fig = go.Figure(go.Bar(
+            x=revs, y=names, orientation="h",
+            marker_color="rgba(56,189,248,0.85)",
+            text=[f"${v:.1f}M" for v in revs], textposition="auto",
+        ))
+        fig.update_layout(title="상위 10개 게임 수익", height=380,
+            xaxis_title="수익 (백만$)", paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
+            font=dict(color="white"), margin=dict(l=160, r=20, t=40, b=40))
+        figs.append(fig)
+
+    # 2. 장르별 수익 분포 도넛 차트
+    genre_rev: dict = defaultdict(float)
+    for g in analysis_games:
+        for genre in (g.get("genres") or [])[:2]:
+            genre_rev[genre] += (g.get("revenue") or 0)
+    if genre_rev:
+        top_g = sorted(genre_rev.items(), key=lambda x: x[1], reverse=True)[:10]
+        fig = go.Figure(go.Pie(
+            labels=[g for g, _ in top_g], values=[v for _, v in top_g],
+            hole=0.38, textinfo="label+percent",
+        ))
+        fig.update_layout(title="장르별 수익 분포", height=380,
+            paper_bgcolor="#1e293b", font=dict(color="white"), showlegend=False)
+        figs.append(fig)
+
+    # 3. 연도별 수익·판매 트렌드
+    if yearly_trends:
+        years = sorted(yearly_trends.keys())
+        rev_v  = [yearly_trends[y].get("revenue", 0) / 1e6 for y in years]
+        sal_v  = [yearly_trends[y].get("sales", 0) / 1e6 for y in years]
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=years, y=rev_v, name="수익증분(백만$)",
+                             marker_color="rgba(56,189,248,0.7)"))
+        fig.add_trace(go.Scatter(x=years, y=sal_v, name="판매증분(백만장)",
+                                 yaxis="y2", line=dict(color="#ff7043", width=2),
+                                 mode="lines+markers"))
+        fig.update_layout(title="연도별 수익·판매 트렌드", height=380,
+            yaxis=dict(title="수익(백만$)"),
+            yaxis2=dict(title="판매(백만장)", overlaying="y", side="right"),
+            legend=dict(orientation="h", y=1.1),
+            paper_bgcolor="#1e293b", plot_bgcolor="#1e293b", font=dict(color="white"))
+        figs.append(fig)
+
+    # 4. 공통 태그 TOP 15
+    tag_count: Counter = Counter()
+    for g in analysis_games:
+        for tag in (g.get("tags") or []):
+            tag_count[tag] += 1
+    if tag_count:
+        top_tags = tag_count.most_common(15)
+        t_rev = [t for t, _ in reversed(top_tags)]
+        c_rev = [c for _, c in reversed(top_tags)]
+        fig = go.Figure(go.Bar(x=c_rev, y=t_rev, orientation="h",
+                               marker_color="rgba(165,180,252,0.85)"))
+        fig.update_layout(title="공통 태그 TOP 15", height=380,
+            xaxis_title="게임 수", paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
+            font=dict(color="white"), margin=dict(l=130, r=20, t=40, b=40))
+        figs.append(fig)
+
+    if not figs:
+        return ""
+
+    # Plotly.js 인라인 포함: 첫 번째 figure에만 True → 이후 재사용
+    divs = []
+    for i, fig in enumerate(figs):
+        div = pio.to_html(fig, include_plotlyjs=(i == 0), full_html=False,
+                          config={"displayModeBar": False, "responsive": True})
+        divs.append(
+            f'<div style="background:#1e293b;border-radius:8px;padding:0.5rem;">{div}</div>'
+        )
+
+    inner = "\n".join(divs)
+    return (
+        '<section id="py-charts" style="background:#0f172a;padding:2rem;font-family:sans-serif;">'
+        '<h2 style="color:#38bdf8;border-bottom:2px solid #334155;padding-bottom:0.5rem;margin-top:0;">'
+        '📊 데이터 시각화</h2>'
+        '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-top:1rem;">'
+        f'{inner}</div></section>'
+    )
+
+
 st.set_page_config(page_title="커스텀 리포트", page_icon="📋", layout="wide")
 
 from analysis.data_loader import (
@@ -792,7 +885,17 @@ if generate_btn:
         elif "<html" in full_html:
             full_html = full_html[full_html.index("<html"):]
 
-        # CDN 스크립트 인라인 삽입 (iframe CSP 우회 → 차트 정상 표시)
+        # ── 서버사이드 Plotly 차트 삽입 (CDN 불필요, 100% 신뢰) ──────────
+        charts_section = _generate_plotly_charts(analysis_games, yearly)
+        if charts_section:
+            body_m = re.search(r'<body[^>]*>', full_html, re.IGNORECASE)
+            if body_m:
+                pos = body_m.end()
+                full_html = full_html[:pos] + "\n" + charts_section + "\n" + full_html[pos:]
+            else:
+                full_html = charts_section + full_html
+
+        # ── Chart.js CDN 인라인 처리 (Claude 생성 차트 살리기 보조) ──────
         full_html = _inline_cdn_scripts(full_html)
 
         st.session_state["generated_html"]   = full_html
