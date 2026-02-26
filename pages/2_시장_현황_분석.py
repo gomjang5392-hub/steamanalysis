@@ -263,12 +263,12 @@ if show_history and "📈 시계열 히스토리" in tab_map:
             with metric_tabs[1]:
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=df_h.period, y=df_h.avg_ccu,
-                                         name="평균 PCCU", fill="tozeroy",
+                                         name="평균 CCU", fill="tozeroy",
                                          fillcolor="rgba(79,195,247,0.15)",
                                          line=dict(color="#4fc3f7",width=2)))
                 fig.add_trace(go.Scatter(x=df_h.period, y=df_h.max_ccu,
-                                         name="최대 PCCU", line=dict(color="#ff7043",width=1,dash="dot")))
-                fig.update_layout(yaxis_title="PCCU", height=360,
+                                         name="최대 CCU (최상위 게임)", line=dict(color="#ff7043",width=1,dash="dot")))
+                fig.update_layout(yaxis_title="CCU", height=360,
                                   plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                                   font=dict(color="white"))
                 st.plotly_chart(fig, use_container_width=True)
@@ -454,11 +454,11 @@ if show_table and "📋 게임 목록" in tab_map:
             yr = datetime.fromtimestamp(int(ts)/1000).strftime("%Y-%m") if ts else "?"
             rows.append({"게임명":g.get("name",""),"출시":yr,
                          "장르":", ".join((g.get("genres") or [])[:3]),
-                         "가격($)":g.get("price") or 0,
-                         "수익($M)":round((g.get("revenue") or 0)/1e6,2),
-                         "판매량(M)":round((g.get("copiesSold") or 0)/1e6,2),
+                         "가격($)":f"${g.get('price') or 0:.2f}",
+                         "수익($M)":f"{(g.get('revenue') or 0)/1e6:.2f}",
+                         "판매량(M)":f"{(g.get('copiesSold') or 0)/1e6:.2f}",
                          "리뷰점수":g.get("reviewScore") or 0,
-                         "플레이타임(h)":round(g.get("avgPlaytime") or 0,1),
+                         "플레이타임(h)":f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
                          "팔로워":f"{(g.get('followers') or 0):,}",
                          "위시리스트":f"{(g.get('wishlists') or 0):,}",
                          "국가Top1": sorted((_parse_field(g.get("countryData"), default={}) or {}).items(),

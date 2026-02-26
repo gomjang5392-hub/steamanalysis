@@ -346,8 +346,12 @@ with st.expander(
                         row[field] = f"${val/1e6:.1f}M"
                     elif field == "판매량":
                         row[field] = f"{val/1e6:.2f}M"
+                    elif field == "가격":
+                        row[field] = f"${val:.2f}"
+                    elif field == "평균플레이타임":
+                        row[field] = f"{val:.1f}".rstrip('0').rstrip('.')
                     elif isinstance(val, float):
-                        row[field] = round(val, 1)
+                        row[field] = f"{val:,.2f}".rstrip('0').rstrip('.')
                     else:
                         row[field] = f"{val:,}" if val > 999 else val
                 preview_rows.append(row)
@@ -366,7 +370,7 @@ with st.expander(
                     ("팔로워 평균",   "followers",      ""),
                     ("리뷰점수 평균", "review_score",   ""),
                     ("플레이타임 평균","avg_playtime",  "h"),
-                    ("팔로워 평균",   "followers",      ""),
+                    ("리뷰수 평균",   "reviews",        ""),
                     ("위시리스트 평균","wishlists",     ""),
                 ]
                 for i, (label, key, unit) in enumerate(kpi_items):
@@ -422,10 +426,10 @@ with st.expander(
                             font=dict(color="white"))
                         st.plotly_chart(fig, use_container_width=True)
 
-                # CCU 상위 10
-                top10 = sorted(filtered, key=lambda x: x.get("players") or 0, reverse=True)[:10]
+                # 팔로워 상위 10
+                top10 = sorted(filtered, key=lambda x: x.get("followers") or 0, reverse=True)[:10]
                 rows = [{"게임명": g.get("name",""),
-                         "플레이타임(h)": round(g.get("avgPlaytime") or 0, 1),
+                         "플레이타임(h)": f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.'),
                          "리뷰점수": g.get("reviewScore") or 0,
                          "팔로워": f"{(g.get('followers') or 0):,}",
                          "위시리스트": f"{(g.get('wishlists') or 0):,}"}
@@ -507,10 +511,19 @@ with st.expander(
                     st.markdown("**전체 수치**")
                     df_show = df_h.drop(columns=["total_ccu"]).rename(columns={
                         "period":"기간","sales_inc":"판매증분","revenue_inc":"수익증분($)",
-                        "avg_ccu":"평균PCCU","max_ccu":"최대PCCU",
+                        "avg_ccu":"평균CCU","max_ccu":"최대CCU",
                         "avg_score":"평균점수","avg_playtime":"플레이타임(h)",
                         "avg_price":"평균가격($)","avg_followers":"평균팔로워",
                         "avg_wishlists":"평균위시리스트","total_games":"게임수"})
+                    df_show["판매증분"]      = df_show["판매증분"].apply(lambda x: f"{x:,.0f}")
+                    df_show["수익증분($)"]   = df_show["수익증분($)"].apply(lambda x: f"${x:,.0f}")
+                    df_show["평균CCU"]       = df_show["평균CCU"].apply(lambda x: f"{x:,.0f}")
+                    df_show["최대CCU"]       = df_show["최대CCU"].apply(lambda x: f"{x:,.0f}")
+                    df_show["평균점수"]      = df_show["평균점수"].apply(lambda x: f"{x:.1f}")
+                    df_show["플레이타임(h)"] = df_show["플레이타임(h)"].apply(lambda x: f"{x:.1f}".rstrip('0').rstrip('.'))
+                    df_show["평균가격($)"]   = df_show["평균가격($)"].apply(lambda x: f"${x:.2f}")
+                    df_show["평균팔로워"]    = df_show["평균팔로워"].apply(lambda x: f"{x:,.0f}")
+                    df_show["평균위시리스트"]= df_show["평균위시리스트"].apply(lambda x: f"{x:,.0f}")
                     st.dataframe(df_show, use_container_width=True, hide_index=True)
 
         # ── 국가별 탭 ────────────────────────────────────
