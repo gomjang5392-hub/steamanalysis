@@ -362,7 +362,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                     "겹침 광범위성": f"{o['overlap_pct']}%",
                     "장르": ", ".join(o["genres"][:3]) if o["genres"] else "-",
                 })
-            st.dataframe(pd.DataFrame(ol_rows), width='stretch', hide_index=True)
+            st.dataframe(pd.DataFrame(ol_rows), use_container_width=True, hide_index=True)
 
             # ── 버블 차트 ──────────────────────────────────────
             st.markdown("#### 타겟 유저 맵 — Link × 유저 규모")
@@ -464,7 +464,7 @@ if show_table and "📋 게임 목록" in tab_map:
                          "국가Top1": sorted((_parse_field(g.get("countryData"), default={}) or {}).items(),
                                            key=lambda x:x[1],reverse=True)[0][0].upper()
                                      if _parse_field(g.get("countryData"), default={}) else "-"})
-        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 # ── AI 분석 ───────────────────────────────────────────────
 with tab_map["🤖 AI 분석"]:

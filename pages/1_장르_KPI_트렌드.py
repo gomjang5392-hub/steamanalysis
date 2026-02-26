@@ -288,7 +288,7 @@ if show_activity and "👥 유저 활동" in tab_map:
                      "리뷰점수": g.get("reviewScore", 0),
                      "플레이타임(h)": f"{(g.get('avgPlaytime') or 0):.1f}".rstrip('0').rstrip('.')}
                     for g in top_fol]
-        st.dataframe(pd.DataFrame(fol_rows), width='stretch', hide_index=True)
+        st.dataframe(pd.DataFrame(fol_rows), use_container_width=True, hide_index=True)
 
 # ── 탭: 시계열 히스토리 ───────────────────────────────────
 if show_history and "📅 시계열 히스토리" in tab_map:
@@ -384,7 +384,7 @@ if show_history and "📅 시계열 히스토리" in tab_map:
                 df_show["평균가격"]      = df_show["평균가격"].apply(lambda x: f"${x:.2f}")
                 df_show["평균팔로워"]    = df_show["평균팔로워"].apply(lambda x: f"{x:,.0f}")
                 df_show["평균위시리스트"]= df_show["평균위시리스트"].apply(lambda x: f"{x:,.0f}")
-                st.dataframe(df_show, width='stretch', hide_index=True)
+                st.dataframe(df_show, use_container_width=True, hide_index=True)
 
             # 단일 게임 히스토리 (선택)
             st.divider()
@@ -454,7 +454,7 @@ if show_country and "🌍 국가별 분포" in tab_map:
                         row[code.upper()] = f"{pct}%"
                     country_rows.append(row)
                 if country_rows:
-                    st.dataframe(pd.DataFrame(country_rows), width='stretch', hide_index=True)
+                    st.dataframe(pd.DataFrame(country_rows), use_container_width=True, hide_index=True)
 
 # ── 탭: 유저 겹침 분석 ────────────────────────────────────
 if show_overlap and "🔗 유저 겹침" in tab_map:
@@ -494,7 +494,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                     "겹침 광범위성": f"{o['overlap_pct']}%",
                     "장르": ", ".join(o["genres"][:3]) if o["genres"] else "-",
                 })
-            st.dataframe(pd.DataFrame(ol_rows), width='stretch', hide_index=True)
+            st.dataframe(pd.DataFrame(ol_rows), use_container_width=True, hide_index=True)
 
             st.caption(
                 "겹침 광범위성: 필터된 게임 중 해당 외부 게임을 audienceOverlap에 포함하는 비율. "
@@ -615,7 +615,7 @@ if show_game_table and "📋 게임 목록" in tab_map:
                 "Steam 비율": f"{(g.get('steamPercent') or 0):.2f}",
                 "태그": ", ".join((g.get("tags") or [])[:5]),
             })
-        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 # ── 탭: AI 분석 ───────────────────────────────────────────
 with tab_map["🤖 AI 분석"]:

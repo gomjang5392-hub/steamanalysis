@@ -141,7 +141,7 @@ with tab_map["🏆 벤치마크"]:
                      "팔로워":f"{(g.get('followers') or 0):,.0f}",
                      "위시리스트":f"{(g.get('wishlists') or 0):,.0f}",
                      "태그":", ".join((g.get("tags") or [])[:4])})
-    st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     st.divider()
     col1, col2 = st.columns(2)
@@ -377,7 +377,7 @@ if show_overlap and "🔗 유저 겹침" in tab_map:
                     "겹침 광범위성": f"{o['overlap_pct']}%",
                     "장르": ", ".join(o["genres"][:3]) if o["genres"] else "-",
                 })
-            st.dataframe(pd.DataFrame(ol_rows), width='stretch', hide_index=True)
+            st.dataframe(pd.DataFrame(ol_rows), use_container_width=True, hide_index=True)
             st.caption("겹침 광범위성: 벤치마크 게임 중 해당 외부 게임을 audienceOverlap에 포함하는 비율.")
 
             # ── 버블 차트 ──────────────────────────────────────
