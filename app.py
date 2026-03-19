@@ -9,6 +9,10 @@ from pathlib import Path
 # 프로젝트 루트를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent))
 
+import io
+import socket
+
+import qrcode
 import streamlit as st
 from scripts.game_collector import (
     fetch_game,
@@ -38,6 +42,22 @@ if not api_key:
 
 st.sidebar.success(f"API Key: ****{api_key[-4:]}")
 st.sidebar.info(f"저장 경로: {GAME_DATA_DIR}")
+
+# ─── QR 코드 (모바일 접속용) ──────────────────────────────
+with st.sidebar.expander("📱 모바일 접속 QR코드"):
+    try:
+        local_ip = socket.gethostbyname(socket.gethostname())
+        port = 8501  # Streamlit 기본 포트
+        app_url = f"http://{local_ip}:{port}"
+
+        qr_img = qrcode.make(app_url)
+        buf = io.BytesIO()
+        qr_img.save(buf, format="PNG")
+
+        st.image(buf.getvalue(), caption=app_url, use_container_width=True)
+        st.caption("같은 Wi-Fi에 연결된 모바일에서 스캔하세요.")
+    except Exception:
+        st.warning("네트워크 IP를 감지할 수 없습니다.")
 
 # ─── 탭 구성 ──────────────────────────────────────────────
 

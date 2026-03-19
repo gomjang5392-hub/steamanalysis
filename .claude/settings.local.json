@@ -18,7 +18,10 @@
       "Bash(wc:*)",
       "Bash(tail:*)",
       "Bash(git:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(pip install qrcode[pil])",
+      "Bash(du -sh /c/Users/gomjang5392/Desktop/Claude/Gamalytic Data/*)",
+      "Bash(claude mcp:*)"
     ]
   }
 }
